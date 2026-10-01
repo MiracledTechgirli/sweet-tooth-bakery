@@ -49,3 +49,9 @@ node server.js
 ```
 
 Open **`http://localhost:3000`** in your browser!
+
+### Deploy to Vercel
+
+Import the repository into Vercel with the project root as the Root Directory. The
+Vercel function configuration includes the HTML, browser scripts, stylesheet, and
+product images that the Node server reads from disk at runtime.
