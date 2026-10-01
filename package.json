@@ -1,0 +1,21 @@
+{
+  "name": "sweet-tooth-bakery",
+  "version": "1.0.0",
+  "description": "Sweet Tooth Bakery & Confectionery store with Supabase/Neon DB, Mailgun confirmation emails, and Google Auth.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "bakery",
+    "confectionery",
+    "ecommerce",
+    "supabase",
+    "neon",
+    "mailgun",
+    "google-auth"
+  ],
+  "author": "Sweet Tooth Dev",
+  "license": "MIT"
+}

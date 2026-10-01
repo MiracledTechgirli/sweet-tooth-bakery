@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Tooth - Artisan Bakery & Confectionery</title>
+    <meta name="description" content="Order freshly baked gourmet cakes, French macarons, artisanal chocolates, and handcrafted cookies online at Sweet Tooth Bakery. Fast delivery & instant order confirmations.">
+    
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- External SDKs: Phosphor Icons, Supabase JS, Google Identity Services -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="app.switchView('catalog-view')" style="cursor: pointer;">
+                <div class="logo-badge">🍰</div>
+                <span>SWEET TOOTH</span>
+            </div>
+
+            <div class="nav-search">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search macarons, cakes, cookies..." />
+            </div>
+
+            <div class="nav-actions">
+                <span class="nav-link active" data-view="catalog-view" id="nav-shop-link">Sweets Shop</span>
+                <span class="nav-link" data-view="checkout-view" id="nav-checkout-link">Checkout</span>
+
+                <div id="user-profile-container"></div>
+
+                <button class="cart-btn" id="open-cart-btn">
+                    <i class="ph ph-shopping-bag" style="font-size: 20px;"></i>
+                    <span>Basket</span>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="container">
+
+        <!-- VIEW 1: CATALOG / SHOP HOME -->
+        <section id="catalog-view" class="view-section active">
+            <!-- HERO BANNER -->
+            <div class="hero">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-tag">🍓 Handcrafted Daily Fresh</span>
+                    <h1 class="hero-title">Indulge Your Sweetest Cravings</h1>
+                    <p class="hero-desc">Discover artisanal French macarons, velvety celebration cakes, rich Belgian truffles, and freshly baked gourmet cookies.</p>
+                    <div style="display: flex; gap: 14px;">
+                        <button class="btn btn-primary" onclick="document.getElementById('products-grid').scrollIntoView({behavior:'smooth'})">
+                            Explore Sweets 🧁
+                        </button>
+                        <button class="btn btn-secondary" onclick="app.openAuthModal()">
+                            Google Sign In
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <div class="categories-pills">
+                    <button class="category-btn active" data-category="all" id="cat-all">All Sweets</button>
+                    <button class="category-btn" data-category="cakes" id="cat-cakes">Cakes</button>
+                    <button class="category-btn" data-category="macarons" id="cat-macarons">Macarons</button>
+                    <button class="category-btn" data-category="cookies" id="cat-cookies">Cookies</button>
+                    <button class="category-btn" data-category="cupcakes & tarts" id="cat-tarts">Cupcakes & Tarts</button>
+                    <button class="category-btn" data-category="chocolates" id="cat-chocolates">Chocolates</button>
+                    <button class="category-btn" data-category="breads & pastries" id="cat-breads">Breads & Pastries</button>
+                </div>
+
+
+                <select id="sort-select" class="sort-select">
+                    <option value="featured">Sort: Featured Treats</option>
+                    <option value="low-high">Price: Low to High</option>
+                    <option value="high-low">Price: High to Low</option>
+                    <option value="rating">Top Rated</option>
+                </select>
+            </div>
+
+            <!-- PRODUCT GRID -->
+            <div id="products-grid" class="products-grid"></div>
+        </section>
+
+
+        <!-- VIEW 2: CHECKOUT PAGE -->
+        <section id="checkout-view" class="view-section">
+            <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h1 style="font-family: var(--font-heading); font-size: 32px; font-weight: 700; color: #2d1822;">Bakery Checkout</h1>
+                    <p style="color: var(--text-secondary); font-size: 15px; font-weight: 500;">Complete your sweet order. Orders persist to Supabase/Neon DB and dispatch confirmation via Mailgun.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="app.switchView('catalog-view')">
+                    ← Back to Sweets Shop
+                </button>
+            </div>
+
+            <div class="checkout-grid">
+                <!-- FORM COLUMN -->
+                <div>
+                    <!-- STEP 1: CUSTOMER & GOOGLE AUTH -->
+                    <div class="checkout-card">
+                        <div class="checkout-card-header">
+                            <div class="step-num">1</div>
+                            <div class="checkout-card-title">Customer Information</div>
+                        </div>
+
+                        <div style="background: #fdf2f8; border: 2px solid #fbcfe8; padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 14px; color: #2d1822;">Google Auth Express Checkout</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Fast-fill address & email via Google Cloud OAuth</div>
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px;" onclick="app.openAuthModal()">
+                                Connect Google
+                            </button>
+                        </div>
+
+                        <form id="checkout-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="cust-name">Full Name *</label>
+                                    <input type="text" id="cust-name" class="form-input" required placeholder="Sweet Tooth Lover" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="cust-email">Email Address (For Mailgun Confirmation) *</label>
+                                    <input type="email" id="cust-email" class="form-input" required placeholder="sweet@example.com" />
+                                </div>
+                            </div>
+                    </div>
+
+                    <!-- STEP 2: SHIPPING ADDRESS -->
+                    <div class="checkout-card">
+                        <div class="checkout-card-header">
+                            <div class="step-num">2</div>
+                            <div class="checkout-card-title">Delivery Destination</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cust-address">Street Address *</label>
+                            <input type="text" id="cust-address" class="form-input" required placeholder="123 Dessert Lane" />
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="cust-city">City *</label>
+                                <input type="text" id="cust-city" class="form-input" required placeholder="San Francisco" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="cust-zip">ZIP / Postal Code *</label>
+                                <input type="text" id="cust-zip" class="form-input" required placeholder="94107" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cust-country">Country *</label>
+                            <select id="cust-country" class="form-input">
+                                <option value="United States">United States</option>
+                                <option value="Canada">Canada</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Germany">Germany</option>
+                                <option value="Australia">Australia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: PAYMENT METHOD -->
+                    <div class="checkout-card">
+                        <div class="checkout-card-header">
+                            <div class="step-num">3</div>
+                            <div class="checkout-card-title">Payment Method</div>
+                        </div>
+
+                        <div class="payment-options" style="margin-bottom: 20px;">
+                            <label class="payment-option selected">
+                                <input type="radio" name="payment-method" value="credit_card" checked style="display:none;" />
+                                <i class="ph ph-credit-card"></i>
+                                <span style="font-size: 13px; font-weight: 700; color:#2d1822;">Credit Card</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="google_pay" style="display:none;" />
+                                <i class="ph ph-google-logo"></i>
+                                <span style="font-size: 13px; font-weight: 700; color:#2d1822;">Google Pay</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="sandbox" style="display:none;" />
+                                <i class="ph ph-shield-check"></i>
+                                <span style="font-size: 13px; font-weight: 700; color:#2d1822;">Test Sandbox</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" class="form-input" placeholder="4532 •••• •••• 8921" value="4532 8821 9901 8921" />
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="text" class="form-input" placeholder="MM/YY" value="08/28" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">CVC Code</label>
+                                <input type="password" class="form-input" placeholder="CVC" value="882" />
+                            </div>
+                        </div>
+
+                        <button type="submit" id="place-order-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 16px;">
+                            Place Sweet Order & Pay 🍰
+                        </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- SUMMARY COLUMN -->
+                <div>
+                    <div class="checkout-card summary-card">
+                        <div class="checkout-card-title" style="margin-bottom: 16px;">Order Summary</div>
+
+                        <div id="checkout-items-list" style="margin-bottom: 20px; max-height: 280px; overflow-y: auto;"></div>
+
+                        <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                            <input type="text" id="promo-input" class="form-input" placeholder="Promo Code (SWEET10)" style="font-size: 13px;" />
+                            <button type="button" id="apply-promo-btn" class="btn btn-secondary" style="padding: 10px 16px;">Apply</button>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="summary-subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Sales Tax (8%)</span>
+                            <span id="summary-tax">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Delivery Fee</span>
+                            <span id="summary-shipping">FREE</span>
+                        </div>
+                        <div class="summary-row" style="color: #16a34a;">
+                            <span>Promo Discount</span>
+                            <span id="summary-discount">-$0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total Due</span>
+                            <span id="summary-total">$0.00</span>
+                        </div>
+
+                        <div style="margin-top: 20px; font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 500;">
+                            🔒 256-Bit SSL Encryption • Supabase DB Persisted
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- VIEW 3: ORDER CONFIRMATION VIEW -->
+        <section id="order-confirmation-view" class="view-section">
+            <div style="max-width: 650px; margin: 40px auto; text-align: center;" class="checkout-card">
+                <div style="width: 76px; height: 76px; background: #dcfce7; color: #15803d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 38px; margin: 0 auto 20px auto; border: 2px solid #86efac;">
+                    ✓
+                </div>
+                <h1 style="font-family: var(--font-heading); font-size: 34px; font-weight: 700; color: #2d1822; margin-bottom: 8px;">Order Confirmed!</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-weight: 500;">Thank you for ordering with Sweet Tooth Bakery. Your delicious treats are being freshly prepared!</p>
+
+                <div style="background: #fdf2f8; border: 2px solid #fbcfe8; border-radius: var(--radius-md); padding: 20px; text-align: left; margin-bottom: 28px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: var(--text-muted); font-size: 14px;">Order Reference:</span>
+                        <strong id="conf-order-num" style="color: #db2777;">#SWT-982173</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: var(--text-muted); font-size: 14px;">Confirmation Email:</span>
+                        <strong id="conf-email" style="color: #2d1822;">customer@example.com</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: var(--text-muted); font-size: 14px;">Database Persistence:</span>
+                        <span class="badge badge-fresh" id="conf-db-status">Supabase DB</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted); font-size: 14px;">Total Paid:</span>
+                        <strong id="conf-total" style="color: #db2777; font-size: 18px; font-family: var(--font-heading);">$0.00</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 14px; justify-content: center;">
+                    <button class="btn btn-primary" id="preview-email-btn">
+                        📩 Preview Brevo Email
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.switchView('catalog-view')">
+                        Order More Sweets 🍰
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SHOPPING CART DRAWER -->
+    <div id="cart-backdrop" class="cart-drawer-backdrop"></div>
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="modal-header">
+            <h3 style="font-family: var(--font-heading); color: #2d1822;">🛍️ Sweet Basket</h3>
+            <button class="icon-btn" id="close-cart-btn">&times;</button>
+        </div>
+        <div id="cart-items-container" class="cart-drawer-body"></div>
+        <div style="padding: 20px; border-top: 2px solid #fce7f3; background: #fff8f6;">
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-bottom: 16px;">
+                <span style="color:#2d1822;">Subtotal</span>
+                <span id="cart-subtotal" style="color: #db2777;">$0.00</span>
+            </div>
+            <button id="proceed-checkout-btn" class="btn btn-primary" style="width: 100%; padding: 14px;">
+                Proceed to Bakery Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- JS MODULES -->
+    <script src="supabase-client.js"></script>
+    <script src="brevo-service.js"></script>
+    <script src="auth-service.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
