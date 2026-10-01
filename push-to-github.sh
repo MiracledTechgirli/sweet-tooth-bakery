@@ -2,7 +2,7 @@
 # Run this script from /home/techgirli/Music/store-website to push to GitHub
 set -e
 
-REMOTE="git@github.com:MiracledTechgirli/sweet-tooth-bakery.git"
+REMOTE="git@github.com:Techgirli/sweet-tooth-bakery.git"
 
 echo "🔧 Initialising git repository..."
 git init
@@ -22,12 +22,12 @@ git remote add origin "$REMOTE"
 echo "➕ Staging all files..."
 git add .
 
-echo "💬 Creating initial commit..."
-git commit -m "🍰 Initial commit – Sweet Tooth Bakery website"
+echo "💬 Creating commit..."
+git commit -m "🍰 Update Sweet Tooth Bakery website" || true
 
 echo "🚀 Pushing to GitHub (main branch)..."
 git push -u origin main 2>/dev/null || git push -u origin master
 
 echo ""
 echo "✅ Done! Your code is now on GitHub:"
-echo "   https://github.com/MiracledTechgirli/sweet-tooth-bakery"
+echo "   https://github.com/Techgirli/sweet-tooth-bakery"
