@@ -357,7 +357,7 @@ const server = http.createServer(async (req, res) => {
     });
 });
 
-if (require.main === module || !process.env.VERCEL) {
+if (require.main === module) {
     server.listen(PORT, () => {
         console.log(`=======================================================`);
         console.log(`🍰 Sweet Tooth Bakery Server running on http://localhost:${PORT}`);
