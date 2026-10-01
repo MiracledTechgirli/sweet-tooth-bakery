@@ -38,14 +38,16 @@ loadEnv();
     ];
     try {
         if (!fs.existsSync(DEST_DIR)) fs.mkdirSync(DEST_DIR, { recursive: true });
-        const brainFiles = fs.readdirSync(BRAIN_DIR);
-        for (const { pattern, dest } of mappings) {
-            const destPath = path.join(DEST_DIR, dest);
-            if (fs.existsSync(destPath)) continue; // already copied
-            const src = brainFiles.find(f => f.startsWith(pattern) && f.endsWith('.png'));
-            if (src) {
-                fs.copyFileSync(path.join(BRAIN_DIR, src), destPath);
-                console.log(`[Images] ✅ Copied ${dest}`);
+        if (fs.existsSync(BRAIN_DIR)) {
+            const brainFiles = fs.readdirSync(BRAIN_DIR);
+            for (const { pattern, dest } of mappings) {
+                const destPath = path.join(DEST_DIR, dest);
+                if (fs.existsSync(destPath)) continue; // already copied
+                const src = brainFiles.find(f => f.startsWith(pattern) && f.endsWith('.png'));
+                if (src) {
+                    fs.copyFileSync(path.join(BRAIN_DIR, src), destPath);
+                    console.log(`[Images] ✅ Copied ${dest}`);
+                }
             }
         }
     } catch (e) {
@@ -280,7 +282,8 @@ const server = http.createServer(async (req, res) => {
         return res.end();
     }
 
-    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+    const host = req.headers.host || 'localhost';
+    const parsedUrl = new URL(req.url, `http://${host}`);
     const pathname = parsedUrl.pathname;
 
     // API Route: Config
@@ -354,9 +357,13 @@ const server = http.createServer(async (req, res) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`=======================================================`);
-    console.log(`🍰 Sweet Tooth Bakery Server running on http://localhost:${PORT}`);
-    console.log(`✉️ Brevo Email Dispatcher Active (300 Free Emails / Day)`);
-    console.log(`=======================================================`);
-});
+if (require.main === module || !process.env.VERCEL) {
+    server.listen(PORT, () => {
+        console.log(`=======================================================`);
+        console.log(`🍰 Sweet Tooth Bakery Server running on http://localhost:${PORT}`);
+        console.log(`✉️ Brevo Email Dispatcher Active (300 Free Emails / Day)`);
+        console.log(`=======================================================`);
+    });
+}
+
+module.exports = server;
